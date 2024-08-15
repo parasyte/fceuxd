@@ -1,0 +1,28 @@
+CC	= gcc
+TFLAGS  = -mcpu=i686 -O1 -Izlib -DNOSTDOUT -DC80x86 -DLSB_FIRST -DWINDOWS -DNETWORK -DPSS_STYLE=2 -DZLIB -fomit-frame-pointer
+RM	= del
+B	= drivers/win/
+all:		fceu
+
+include zlib/Makefile
+
+LDRIVER = -mwindows -lddraw -ldinput -ldsound -lgdi32 -ldxguid -lwinmm -lshell32 -lwsock32 -lcomdlg32 -lole32
+OBJDRIVER	= ${B}main.o ${B}log.o ${B}debug.o ${B}input.o ${B}joystick.o ${B}keyboard.o ${B}cheat.o ${B}debugger.o ${B}ppuview.o ${B}memview.o ${B}cdlogger.o ${B}tracer.o ${B}res.o ${ZLIBOBJS} ${UNZIPOBJS} drivers/common/args.o drivers/common/config.o
+
+include Makefile.base
+
+${B}main.o:		version.h ${B}watermark.h ${B}main.c ${B}netplay.c ${B}config.c ${B}throttle.c ${B}video.c ${B}window.c ${B}sound.c ${B}wave.c ${B}args.c
+${B}debugger.o:         ${B}common.h xstring.h ${B}dasm.h ${B}asm.h debugger.h fce.h nsf.h x6502.h cart.h ines.h
+${B}ppuview.o:		${B}common.h ppuview.h debugger.h palette.h
+${B}memview.o:          ${B}common.h memview.h
+${B}tracer.o:		${B}common.h debugger.h x6502.h fce.h tracer.h
+${B}cdlogger.o:		cdlogger.h debugger.h x6502.h
+${B}cheat.o:		${B}common.h ${B}cheat.h
+${B}input.o:		${B}common.h ${B}input.h ${B}joystick.h ${B}keyboard.h
+${B}joystick.o:		${B}common.h ${B}joystick.h ${B}input.h
+${B}keyboard.o:		${B}common.h ${B}keyboard.h ${B}input.h
+${B}log.o:		${B}common.h ${B}log.h
+drivers/win/res.o:	${B}res.res
+			windres -o ${B}res.o ${B}res.res
+
+include Makefile.common

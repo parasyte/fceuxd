@@ -1,0 +1,19 @@
+CC	= arm-thumb-elf-gcc
+AS	= arm-thumb-elf-as
+TFLAGS  = -O2 -mtune=arm920 -msoft-float -mthumb-interwork -Izlib -fomit-frame-pointer -DLSB_FIRST -DPSS_STYLE=2 -DZLIB -Wchar-subscripts
+RM	= rm
+B	= drivers/gp32/
+
+all:		fceu
+
+include zlib/Makefile
+
+SFILES		= ${B}crt0.o
+OBJDRIVER	= ${B}main.o $(SFILES:.s=.o) ${ZLIBOBJS} ${UNZIPOBJS}
+LDRIVER		= -T${B}lnkscript -nostartfiles -lgpmem -lgpos -lgpstdio -lgpstdlib -lgpsound -lm -lc -lgpgraphic
+
+include Makefile.base
+
+include Makefile.common
+
+crt0.o:		crt0.s

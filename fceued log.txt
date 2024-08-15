@@ -1,0 +1,91 @@
+This log will serve to tell exactly what I did to fceu 0.97.5 to update it with Parasyte's Debugger.
+And extend it with a few things of my own. The purpose of this is in case I do it again with a later
+version of fceu and need to take a quick look at what I did.
+
+First I started with the fceu 0.97.5 source.
+
+But it would not compile under my Mingw so to fix that I had to change a couple lines.
+SOURCE EDIT: input.h Added "void FCEUD_UpdateInput(void);"
+SOURCE EDIT: video.c Commented out "ddsd.dwBackBufferCount = 1;" Hopefully that won't break anything.
+
+I also modified makewin.bat and clean.bat and added them for my own personal quick compilation.
+
+Now it compiled with some warnings but other than that its fine so we're set to go at adding the debugger.
+
+I was orginally going to remove xod's debugger but now changed my mind, Why Bother? It doesn't hurt
+anything and it doesn't look like it will conflict much.
+
+The only conflict I see that might arise is with the resource named "DEBUGGER" and para's debugger named
+the same. So to start with I'm renaming the resource to "XODDEBUGGER" and while I'm at it, I might as well
+rename the menu item too, so as not to confuse anyone using it on which one is which.
+
+next I copied debugger.h, debugger.c and dasm.h from the fceud source and added it to the makefile
+
+renamed functions "killDebugger()" and "UpdateDebugger()" in debug.c and debug.h and all calls to them
+in windows.c to prevent conflicts with functions of the same name in Para's debugger.
+
+The next two changes allow debugger.c access to these variables
+SOURCE EDIT: Removed the static keyword from "static NSF_HEADER NSFHeader;" in nsf.h
+SOURCE EDIT: Removed the static keyword from "static volatile int userpause=0;" in main.c
+
+The last thing to do so that debugger.c would compile is to add the function "int iNesSave()" to ines.c
+
+changed my mind about including both debuggers and disabled xod's for now simply by removing the menu item
+I'll remove some of its code later
+
+copied the functions "breakhit()" and "breakpoint()" to x6502.c from fceud
+
+added an appropriate call to "breakpoint()" in x6502run() in x6502.c
+
+added an #include "debugger.h to x6502.c
+
+I then commented out all references to pbackus in x6502.c because that was causing problems
+
+Now its cheat menu time, first I inserted para's cheat.c into drivers/win and to get it to compile I had to
+change the parameters in some calls to FCEUI_SetCheat() and FCEUI_GetCheat() and add a global
+"int CheatStyle = 0, CheatWindow = 0;" which will be loaded from the config file later.
+
+then I renamed the command items for the tools menu resource to what they are in fceud and modified windows.c
+accordingly
+
+then I inserted the following resources from fceud ("DEBUGGER" was already added)
+"ADDBP"
+"CHEATCONSOLE"
+"PPUVIEW"
+"ROMPATCHER"
+
+added "KillDebugger();" in DoFCEUExit() in main.c to prevent the program from crashing when you close
+
+changed some stuff in a few WM_COMMAND and WM_KEYDOWN messages in window.c to test if the debugger is snapped
+
+copied ppuview.c and ppuview.h from fceud and added them to the makefile
+
+to get ppuview.c to compile, I had to include palette.h instead of svga.h then I had to #include <commctrl.h>
+in common.h
+
+then I added the call to DoPPUView(); at the appropriate WM_COMMAND message in windows.c
+
+this all compiled fine but the pattern table viewer isn't being updated so to fix that I had to:
+add a call to PPUViewDoBlit(); in FCEUD_Update() in main.c
+add a call to UpdatePPUView(1); in FCEUPPU_Loop() in ppu.c and #include ppuview.h to compile it
+
+now to update the configuration
+updated config.c to store extra parameters that fceud stores
+added int WinPosX=150,WinPosY=150; to window.c and modified it to change them when appropriate as it does in fceud
+modified the misc config dialog resource to have the "Floating Cheat Menu" Option
+updated MiscConCallB in windows.c to handle CheatStyle appropriately
+
+created an icon that says "FCEUED" and inserted it into the res.res as "ICON_FCEUED"
+Modified window.c to use the "ICON_FCEUED" resource for the large icon and "ICON_2" for the small one
+
+terrible bug in ines.c found, changed a line there from memcpy to strcpy
+
+went through all compiler warnings and eliminated them
+
+renamed this project from fceued to fceuxd because it sounds better, x is for extended instead of e
+
+added following lines to /drivers/win/window.c:
+"extern uint8 debugger_open;"
+"if (debugger_open) UpdateDebugger();"  (under the VK_F2/pause routine)
+fixes a problem when using the Run button to unpause a game
+

@@ -1,0 +1,21 @@
+cdlogger.h
+makefile.win
+makefile.base
+fceued log.txt
+xstring.h
+xstring.c
+ines.c
+drivers/win/cheat.c
+drivers/win/debugger.c
+drivers/win/res.res
+drivers/win/asm.h
+drivers/win/dasm.h
+
+
+drivers/win/debugger.c
+
+
+file.c
+drivers/win/config.c
+drivers/win/window.c
+res.res
